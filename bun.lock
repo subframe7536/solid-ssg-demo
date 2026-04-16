@@ -8,6 +8,7 @@
         "solid-js": "^1.9.5",
       },
       "devDependencies": {
+        "@solidjs/router": "^0.16.1",
         "@subf/config": "^0.2.1",
         "oxfmt": "^0.45.0",
         "oxlint": "^1.60.0",
@@ -181,6 +182,8 @@
     "@rolldown/binding-win32-x64-msvc": ["@rolldown/binding-win32-x64-msvc@1.0.0-rc.15", "https://registry.npmmirror.com/@rolldown/binding-win32-x64-msvc/-/binding-win32-x64-msvc-1.0.0-rc.15.tgz", { "os": "win32", "cpu": "x64" }, "sha512-3P2A8L+x75qavWLe/Dll3EYBJLQmtkJN8rfh+U/eR3MqMgL/h98PhYI+JFfXuDPgPeCB7iZAKiqii5vqOvnA0g=="],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.0-rc.15", "https://registry.npmmirror.com/@rolldown/pluginutils/-/pluginutils-1.0.0-rc.15.tgz", {}, "sha512-UromN0peaE53IaBRe9W7CjrZgXl90fqGpK+mIZbA3qSTeYqg3pqpROBdIPvOG3F5ereDHNwoHBI2e50n1BDr1g=="],
+
+    "@solidjs/router": ["@solidjs/router@0.16.1", "https://registry.npmmirror.com/@solidjs/router/-/router-0.16.1.tgz", { "peerDependencies": { "solid-js": "^1.8.6" } }, "sha512-IhyjedgC6LRpw/8CPGGI89FrV+r0xTHzOl2c4CRyzYQ1bLepJxbVI1LLKvsavMWY5TRBRacV7hAeOhuTXkjiqg=="],
 
     "@subf/config": ["@subf/config@0.2.1", "https://registry.npmmirror.com/@subf/config/-/config-0.2.1.tgz", { "dependencies": { "@subf/oxlint-plugin": "^0.2.2" }, "peerDependencies": { "defu": "*" }, "bin": { "subf": "bin/subf.js" } }, "sha512-/Kpk+cWBEJJ8j7BDr2e8U1t5axlVgMrPzzH5jUUfdjxaCyQIC0gSneusVOctT1XPnh5zN6EV+7QnL9AuiPGc6A=="],
 

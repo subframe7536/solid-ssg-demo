@@ -1,54 +1,55 @@
-import { defineConfig } from "vite";
-import solidPlugin from "vite-plugin-solid";
-import fs from "fs";
-import path from "path";
-import { pathToFileURL } from "url";
-import { generateHydrationScript, getAssets } from "solid-js/web";
+import fs from 'node:fs'
+import path from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+import { generateHydrationScript, getAssets } from 'solid-js/web'
+import { defineConfig } from 'vite'
+import solidPlugin from 'vite-plugin-solid'
 
 export default defineConfig({
   plugins: [
     solidPlugin({ ssr: true }),
     {
-      name: "vite-plugin-solid-ssr-render",
+      name: 'vite-plugin-solid-ssr-render',
       apply: (config, env) => {
-        return env.command === "build" && !config.build?.ssr;
+        return env.command === 'build' && !config.build?.ssr
       },
       closeBundle: async () => {
-        console.log("Pre-rendering pages...");
-        const dist = path.resolve("dist");
+        console.log('Pre-rendering pages...')
+        const dist = path.resolve('dist')
         try {
-          const serverEntryPath = pathToFileURL(path.join(dist, "server/entry-server.js")).href;
-          const serverEntry = await import(serverEntryPath + "?t=" + Date.now());
+          const serverEntryPath = pathToFileURL(path.join(dist, 'server/entry-server.js')).href
+          const serverEntry = await import(`${serverEntryPath}?t=${Date.now()}`)
 
-          const template = fs.readFileSync(path.join(dist, "client/index.html"), "utf-8");
-          fs.writeFileSync(path.join(dist, "client/fallback.html"), template);
+          const template = fs.readFileSync(path.join(dist, 'client/index.html'), 'utf-8')
+          fs.writeFileSync(path.join(dist, 'client/fallback.html'), template)
 
-          const routes = ["/", "/test"];
+          const routes = ['/', '/404']
           for (const route of routes) {
-            const { app } = await serverEntry.render({ url: route });
+            const { app } = await serverEntry.render({ url: route })
             const html = template
-              .replace("<!--ssr-outlet-->", app)
-              .replace("<!--ssr-head-->", generateHydrationScript())
-              .replace("<!--ssr-assets-->", getAssets());
-            const filePath = path.join(dist, `client${route === "/" ? "/index" : route}.html`);
+              .replace('<!--ssr-outlet-->', app)
+              .replace('<!--ssr-head-->', generateHydrationScript())
+              .replace('<!--ssr-assets-->', getAssets())
+            const filePath = path.join(dist, `client${route === '/' ? '/index' : route}.html`)
             fs.mkdirSync(path.dirname(filePath), {
               recursive: true,
-            });
-            fs.writeFileSync(filePath, html);
+            })
+            fs.writeFileSync(filePath, html)
 
-            console.log(`Pre-rendered: ${filePath}`);
+            console.log(`Pre-rendered: ${filePath}`)
           }
         } catch (error) {
-          console.error("Error during pre-rendering:", error);
+          console.error('Error during pre-rendering:', error)
         }
       },
     },
   ],
   server: {
     port: 3000,
-    host: "0.0.0.0",
+    host: '0.0.0.0',
   },
   build: {
-    target: "esnext",
+    target: 'esnext',
   },
-});
+})
