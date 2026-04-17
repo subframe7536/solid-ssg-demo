@@ -1,6 +1,6 @@
 import './styles.css'
 
-import { Route, Router } from '@solidjs/router'
+import { A, Route, Router } from '@solidjs/router'
 import type { RouteSectionProps } from '@solidjs/router'
 import { For, Suspense, lazy } from 'solid-js'
 
@@ -12,6 +12,17 @@ const ProjectPage = lazy(() => import('./pages/project'))
 const LabsPage = lazy(() => import('./pages/labs'))
 const LabPage = lazy(() => import('./pages/lab'))
 const NotFoundPage = lazy(() => import('./pages/not-found'))
+const appBase = import.meta.env.BASE_URL
+const appBasePath = appBase === '/' ? '' : appBase.replace(/\/$/, '')
+
+function stripAppBase(pathname: string) {
+  if (!appBasePath || !pathname.startsWith(appBasePath)) {
+    return pathname
+  }
+
+  const stripped = pathname.slice(appBasePath.length)
+  return stripped || '/'
+}
 
 const navItems = [
   {
@@ -32,9 +43,7 @@ const navItems = [
 ]
 
 function AppShell(props: RouteSectionProps) {
-  const currentPath = () => `${props.location.pathname}${props.location.search}`
-  const isActive = (href: string) =>
-    currentPath() === href || (href !== '/' && currentPath().startsWith(`${href}/`))
+  const currentPath = () => `${stripAppBase(props.location.pathname)}${props.location.search}`
   const totalCheckpoints = projects.reduce(
     (count, project) => count + project.checkpoints.length,
     0,
@@ -55,10 +64,10 @@ function AppShell(props: RouteSectionProps) {
         <nav class="nav-list">
           <For each={navItems}>
             {(item) => (
-              <a class="nav-link" data-active={isActive(item.href)} href={item.href}>
+              <A class="nav-link" end={item.href === '/'} href={item.href}>
                 <strong>{item.title}</strong>
                 <small>{item.summary}</small>
-              </a>
+              </A>
             )}
           </For>
         </nav>
@@ -103,7 +112,7 @@ function AppShell(props: RouteSectionProps) {
             </p>
           </div>
 
-          <div class="path-pill">{props.location.pathname}</div>
+          <div class="path-pill">{currentPath()}</div>
         </header>
 
         <div class="shell-outlet">
@@ -132,7 +141,7 @@ function AppShell(props: RouteSectionProps) {
 
 export function App(props: { url?: string }) {
   return (
-    <Router root={AppShell} url={props.url}>
+    <Router base={appBase} root={AppShell} url={props.url}>
       <Route path="/" component={HomePage} />
       <Route path="/projects" component={ProjectsPage} />
       <Route path="/projects/:projectId/checkpoints/:checkpointId" component={ProjectPage} />

@@ -10,7 +10,7 @@ export default function NotFoundPage() {
         and lab routes.
       </p>
       <div class="empty-state__actions">
-        <A class="button" href="/">
+        <A class="button" end href="/">
           Go home
         </A>
         <A class="ghost-button" href="/projects">

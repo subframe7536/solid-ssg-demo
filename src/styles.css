@@ -223,7 +223,7 @@ a {
   transform: translateY(0) scale(0.98);
 }
 
-.nav-link[data-active='true'] {
+.nav-link.active {
   color: var(--text);
   border-color: color-mix(in srgb, var(--accent) 28%, var(--line-strong));
   background: linear-gradient(

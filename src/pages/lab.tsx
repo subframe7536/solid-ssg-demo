@@ -21,7 +21,7 @@ export default function LabPage(props: RouteSectionProps) {
               <A class="button" href="/labs">
                 Back to labs
               </A>
-              <A class="ghost-button" href="/">
+              <A class="ghost-button" end href="/">
                 Go home
               </A>
             </div>
@@ -31,7 +31,9 @@ export default function LabPage(props: RouteSectionProps) {
         {(currentLab) => (
           <section class="detail-panel" style={{ '--accent': currentLab().accent }}>
             <div class="breadcrumb">
-              <A href="/">Home</A>
+              <A end href="/">
+                Home
+              </A>
               <span>/</span>
               <A href="/labs">Labs</A>
               <span>/</span>

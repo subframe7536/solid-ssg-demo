@@ -6,11 +6,16 @@ import { generateHydrationScript, getAssets } from 'solid-js/web'
 import { defineConfig } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 
+let resolvedBase = '/'
+
 export default defineConfig({
   plugins: [
     solidPlugin({ ssr: true }),
     {
       name: 'vite-plugin-solid-ssr-render',
+      configResolved: (config) => {
+        resolvedBase = config.base
+      },
       apply: (config, env) => {
         return env.command === 'build' && !config.build?.ssr
       },
@@ -22,11 +27,14 @@ export default defineConfig({
           const serverEntry = await import(`${serverEntryPath}?t=${Date.now()}`)
 
           const template = fs.readFileSync(path.join(dist, 'client/index.html'), 'utf-8')
-          fs.writeFileSync(path.join(dist, 'client/fallback.html'), template)
+          fs.writeFileSync(path.join(dist, 'client/404.html'), template)
+
+          const basePath = resolvedBase === '/' ? '' : resolvedBase.replace(/\/$/, '')
+          const withBase = (route: string) => (basePath ? `${basePath}${route}` : route)
 
           const routes = ['/']
           for (const route of routes) {
-            const { app } = await serverEntry.render({ url: route })
+            const { app } = await serverEntry.render({ url: withBase(route) })
             const html = template
               .replace('<!--ssr-outlet-->', app)
               .replace('<!--ssr-head-->', generateHydrationScript())
@@ -45,10 +53,6 @@ export default defineConfig({
       },
     },
   ],
-  server: {
-    port: 3000,
-    host: '0.0.0.0',
-  },
   build: {
     target: 'esnext',
   },

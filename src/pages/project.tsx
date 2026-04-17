@@ -25,7 +25,7 @@ export default function ProjectPage(props: RouteSectionProps) {
               <A class="button" href="/projects">
                 Back to projects
               </A>
-              <A class="ghost-button" href="/">
+              <A class="ghost-button" end href="/">
                 Go home
               </A>
             </div>
@@ -36,7 +36,9 @@ export default function ProjectPage(props: RouteSectionProps) {
           <>
             <section class="detail-panel" style={{ '--accent': currentProject().accent }}>
               <div class="breadcrumb">
-                <A href="/">Home</A>
+                <A end href="/">
+                  Home
+                </A>
                 <span>/</span>
                 <A href="/projects">Projects</A>
                 <span>/</span>
