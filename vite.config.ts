@@ -6,8 +6,6 @@ import { generateHydrationScript, getAssets } from 'solid-js/web'
 import { defineConfig } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 
-import { getPrerenderPaths } from './src/demo-data'
-
 export default defineConfig({
   plugins: [
     solidPlugin({ ssr: true }),
@@ -26,7 +24,7 @@ export default defineConfig({
           const template = fs.readFileSync(path.join(dist, 'client/index.html'), 'utf-8')
           fs.writeFileSync(path.join(dist, 'client/fallback.html'), template)
 
-          const routes = getPrerenderPaths()
+          const routes = ['/']
           for (const route of routes) {
             const { app } = await serverEntry.render({ url: route })
             const html = template
