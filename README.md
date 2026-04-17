@@ -24,8 +24,18 @@ Build the app:
 bun run build
 ```
 
+This runs a single Vite app build that emits both the SSR bundle and the client bundle,
+then prerenders the static routes into `dist/client`.
+
 Preview the production build:
 
 ```bash
 bun run preview
+```
+
+For a GitHub Pages-style base path:
+
+```bash
+bun run build:page
+bun run preview:page
 ```

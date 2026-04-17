@@ -12,8 +12,9 @@ const ProjectPage = lazy(() => import('./pages/project'))
 const LabsPage = lazy(() => import('./pages/labs'))
 const LabPage = lazy(() => import('./pages/lab'))
 const NotFoundPage = lazy(() => import('./pages/not-found'))
-const appBase = import.meta.env.BASE_URL
-const appBasePath = appBase === '/' ? '' : appBase.replace(/\/$/, '')
+const viteBase = import.meta.env.BASE_URL
+const routerBase = viteBase === '/' ? '/' : viteBase.replace(/\/$/, '')
+const appBasePath = routerBase === '/' ? '' : routerBase
 
 function stripAppBase(pathname: string) {
   if (!appBasePath || !pathname.startsWith(appBasePath)) {
@@ -141,7 +142,7 @@ function AppShell(props: RouteSectionProps) {
 
 export function App(props: { url?: string }) {
   return (
-    <Router base={appBase} root={AppShell} url={props.url}>
+    <Router base={routerBase} root={AppShell} url={props.url}>
       <Route path="/" component={HomePage} />
       <Route path="/projects" component={ProjectsPage} />
       <Route path="/projects/:projectId/checkpoints/:checkpointId" component={ProjectPage} />

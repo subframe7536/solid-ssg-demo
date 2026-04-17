@@ -8,13 +8,11 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "dev:page": "vite --base /solid-ssg-demo",
-    "build": "bun run build:server && bun run build:client",
-    "build:page": "bun run build:server --base /solid-ssg-demo && bun run build:client --base /solid-ssg-demo",
-    "build:client": "vite build --outDir dist/client",
-    "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
+    "dev:page": "vite --base /solid-ssg-demo/",
+    "build": "vite build",
+    "build:page": "vite build --base /solid-ssg-demo/",
     "preview": "vite preview --outDir dist/client",
-    "preview:page": "vite preview --outDir dist/client --base /solid-ssg-demo",
+    "preview:page": "vite preview --outDir dist/client --base /solid-ssg-demo/",
     "qa": "oxlint --fix && oxfmt && tsc --noEmit"
   },
   "dependencies": {
