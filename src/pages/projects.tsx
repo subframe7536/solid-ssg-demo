@@ -1,13 +1,14 @@
 import { A } from '@solidjs/router'
-import type { RouteSectionProps } from '@solidjs/router'
+import { createRoute } from 'solid-file-router'
 import { For } from 'solid-js'
 
+import { withBasePath } from '../base-path'
 import { projects } from '../demo-data'
 
-export default function ProjectsPage(_props: RouteSectionProps) {
+function ProjectsListView() {
   return (
     <div class="page stack">
-      <section class="hero-card" style={{ '--accent': projects[1].accent }}>
+      <section class="hero-card" style={`--accent: ${projects[1].accent}`}>
         <div class="hero-headline">
           <p class="eyebrow">Projects</p>
           <h2 class="page-title">
@@ -23,7 +24,7 @@ export default function ProjectsPage(_props: RouteSectionProps) {
       <div class="project-grid">
         <For each={projects}>
           {(project) => (
-            <article class="project-card" style={{ '--accent': project.accent }}>
+            <article class="project-card" style={`--accent: ${project.accent}`}>
               <div class="project-card__title">
                 <div class="project-meta">
                   <p class="eyebrow">{project.owner}</p>
@@ -51,12 +52,14 @@ export default function ProjectsPage(_props: RouteSectionProps) {
               </div>
 
               <div class="action-row">
-                <A class="button" href={project.routeHint}>
+                <A class="button" href={withBasePath(project.routeHint)}>
                   Open project route
                 </A>
                 <A
                   class="ghost-button"
-                  href={`/projects/${project.id}/checkpoints/${project.checkpoints[0].id}`}
+                  href={withBasePath(
+                    `/projects/${project.id}/checkpoints/${project.checkpoints[0].id}`,
+                  )}
                 >
                   First checkpoint
                 </A>
@@ -68,3 +71,7 @@ export default function ProjectsPage(_props: RouteSectionProps) {
     </div>
   )
 }
+
+export default createRoute({
+  component: ProjectsListView,
+})

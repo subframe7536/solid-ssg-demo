@@ -127,7 +127,7 @@ function renderTemplate(template: string, app: string) {
     .replace('</head>', `${generateHydrationScript()}${getAssets()}</head>`)
 }
 
-export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
+export function solid(options: SolidSsgPluginOptions = {}): Plugin[] {
   const {
     mode = MODE.SSG,
     serverEntry = 'src/entry-server.tsx',
@@ -148,30 +148,35 @@ export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
       config(userConfig) {
         const getOutDir = (envName: EnvironmentName, subDir: string) =>
           path.join(userConfig.environments?.[envName]?.build?.outDir ?? 'dist', subDir)
+        const clientOutDir = getOutDir(ENVIRONMENT.CLIENT, 'client')
+        const serverOutDir = getOutDir(ENVIRONMENT.SERVER, 'server')
         return {
           builder: {
             sharedPlugins: true,
             async buildApp(builder) {
               await builder.build(builder.environments[ENVIRONMENT.SERVER])
               await builder.build(builder.environments[ENVIRONMENT.CLIENT])
+              console.log(
+                `Build completed! You can serve the output with a static file server like \`http-server\` on ${clientOutDir}.`,
+              )
             },
           },
           environments: {
             [ENVIRONMENT.CLIENT]: {
               consumer: 'client',
               build: {
-                outDir: getOutDir(ENVIRONMENT.CLIENT, 'client'),
+                outDir: clientOutDir,
               },
             },
             [ENVIRONMENT.SERVER]: {
               consumer: 'server',
               build: {
-                outDir: getOutDir(ENVIRONMENT.SERVER, 'server'),
+                outDir: serverOutDir,
                 ssr: serverEntry,
                 copyPublicDir: false,
               },
               optimizeDeps: {
-                exclude: ['solid-js', 'solid-js/web', '@solidjs/router'],
+                exclude: ['solid-js', 'solid-js/web', '@solidjs/router', 'solid-file-router'],
               },
             },
           },
@@ -243,15 +248,12 @@ export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
             logger?.info('[solid-ssg] emitted 404 fallback; no prerender routes configured')
             return
           }
-          const base = this.environment.config.base
-          const basePath = base === '/' ? '' : base.replace(/\/$/, '')
-
           const renderedRoutes = await mapWithConcurrency(
             prerenderRoutes,
             prerenderConcurrency,
             async (route) => {
               const str = await serverRenderer({
-                url: basePath + route,
+                url: route,
               })
 
               return {

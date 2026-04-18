@@ -4,6 +4,8 @@ This is a demo project showcasing the use of Solid JS with Static Site Generatio
 
 Highly inspired by [OpenControl](https://github.com/anomalyco/opencontrol/blob/dev/app/web)
 
+Routes are file-based under `src/pages` and generated with `solid-file-router`.
+
 ## Setup
 
 Install dependencies:
@@ -25,7 +27,7 @@ bun run build
 ```
 
 This runs a single Vite app build that emits both the SSR bundle and the client bundle,
-then prerenders the static routes into `dist/client`.
+then prerenders the file-based routes into `dist/client`.
 
 Preview the production build:
 

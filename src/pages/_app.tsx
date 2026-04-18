@@ -1,29 +1,12 @@
-import './styles.css'
+import '../styles.css'
 
-import { A, Route, Router } from '@solidjs/router'
-import type { RouteSectionProps } from '@solidjs/router'
-import { For, Suspense, lazy } from 'solid-js'
+import { A, useLocation } from '@solidjs/router'
+import { createRoute } from 'solid-file-router'
+import type { ParentComponent } from 'solid-js'
+import { For, Suspense } from 'solid-js'
 
-import { getPrerenderPaths, labs, projects } from './demo-data'
-
-const HomePage = lazy(() => import('./pages/home'))
-const ProjectsPage = lazy(() => import('./pages/projects'))
-const ProjectPage = lazy(() => import('./pages/project'))
-const LabsPage = lazy(() => import('./pages/labs'))
-const LabPage = lazy(() => import('./pages/lab'))
-const NotFoundPage = lazy(() => import('./pages/not-found'))
-const viteBase = import.meta.env.BASE_URL
-const routerBase = viteBase === '/' ? '/' : viteBase.replace(/\/$/, '')
-const appBasePath = routerBase === '/' ? '' : routerBase
-
-function stripAppBase(pathname: string) {
-  if (!appBasePath || !pathname.startsWith(appBasePath)) {
-    return pathname
-  }
-
-  const stripped = pathname.slice(appBasePath.length)
-  return stripped || '/'
-}
+import { stripBasePath, withBasePath } from '../base-path'
+import { getPrerenderPaths, labs, projects } from '../demo-data'
 
 const navItems = [
   {
@@ -43,8 +26,9 @@ const navItems = [
   },
 ]
 
-function AppShell(props: RouteSectionProps) {
-  const currentPath = () => `${stripAppBase(props.location.pathname)}${props.location.search}`
+const AppShell: ParentComponent = (props) => {
+  const location = useLocation()
+  const currentPath = () => `${stripBasePath(location.pathname)}${location.search}`
   const totalCheckpoints = projects.reduce(
     (count, project) => count + project.checkpoints.length,
     0,
@@ -65,7 +49,7 @@ function AppShell(props: RouteSectionProps) {
         <nav class="nav-list">
           <For each={navItems}>
             {(item) => (
-              <A class="nav-link" end={item.href === '/'} href={item.href}>
+              <A class="nav-link" end={item.href === '/'} href={withBasePath(item.href)}>
                 <strong>{item.title}</strong>
                 <small>{item.summary}</small>
               </A>
@@ -108,8 +92,8 @@ function AppShell(props: RouteSectionProps) {
             <p class="eyebrow">Current route</p>
             <h2 class="section-title">{currentPath()}</h2>
             <p>
-              The shell stays mounted while Solid Router swaps lazy-loaded route modules in and out
-              of the outlet.
+              The shell stays mounted while solid-file-router swaps lazy-loaded route modules in and
+              out of the outlet.
             </p>
           </div>
 
@@ -140,16 +124,6 @@ function AppShell(props: RouteSectionProps) {
   )
 }
 
-export function App(props: { url?: string }) {
-  return (
-    <Router base={routerBase} root={AppShell} url={props.url}>
-      <Route path="/" component={HomePage} />
-      <Route path="/projects" component={ProjectsPage} />
-      <Route path="/projects/:projectId/checkpoints/:checkpointId" component={ProjectPage} />
-      <Route path="/projects/:projectId" component={ProjectPage} />
-      <Route path="/labs" component={LabsPage} />
-      <Route path="/labs/:labId" component={LabPage} />
-      <Route path="*404" component={NotFoundPage} />
-    </Router>
-  )
-}
+export default createRoute({
+  component: AppShell,
+})

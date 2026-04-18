@@ -1,15 +1,19 @@
+import { fileRouter } from 'solid-file-router/plugin'
 import { defineConfig } from 'vite'
 
 import { getPrerenderPaths } from './src/demo-data'
-import { solidSsgPlugin } from './src/vite-plugin'
+import { solid } from './src/vite-plugin'
 
 export default defineConfig({
-  plugins: solidSsgPlugin({
-    mode: 'ssg',
-    prerender: {
-      routes: getPrerenderPaths,
-    },
-  }),
+  plugins: [
+    solid({
+      mode: 'ssg',
+      prerender: {
+        routes: getPrerenderPaths,
+      },
+    }),
+    fileRouter(),
+  ],
   build: {
     target: 'esnext',
   },

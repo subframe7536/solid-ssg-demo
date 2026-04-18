@@ -1,10 +1,11 @@
 import { A } from '@solidjs/router'
-import type { RouteSectionProps } from '@solidjs/router'
+import { createRoute } from 'solid-file-router'
 import { For } from 'solid-js'
 
+import { withBasePath } from '../base-path'
 import { labs, projects } from '../demo-data'
 
-export default function HomePage(_props: RouteSectionProps) {
+function HomeView() {
   const featuredRoutes = [
     ...projects.map((project) => ({
       href: `/projects/${project.id}`,
@@ -22,9 +23,9 @@ export default function HomePage(_props: RouteSectionProps) {
 
   return (
     <div class="page-stack">
-      <section class="hero-card" style={{ '--accent': projects[0].accent }}>
+      <section class="hero-card" style={`--accent: ${projects[0].accent}`}>
         <div class="hero-headline">
-          <p class="eyebrow">Solid router demo</p>
+          <p class="eyebrow">Solid file router demo</p>
           <h2 class="page-title">
             Lazy-loaded route modules with dynamic paths and prerendered pages.
           </h2>
@@ -35,17 +36,17 @@ export default function HomePage(_props: RouteSectionProps) {
         </div>
 
         <div class="action-row">
-          <A class="button" href="/projects">
+          <A class="button" href={withBasePath('/projects')}>
             Explore projects
           </A>
-          <A class="ghost-button" href="/labs/routing">
+          <A class="ghost-button" href={withBasePath('/labs/routing')}>
             Open the routing lab
           </A>
         </div>
       </section>
 
       <section class="panel-grid">
-        <article class="panel-card" style={{ '--accent': projects[1].accent }}>
+        <article class="panel-card" style={`--accent: ${projects[1].accent}`}>
           <div class="section-header">
             <div>
               <p class="eyebrow">Overview</p>
@@ -55,7 +56,7 @@ export default function HomePage(_props: RouteSectionProps) {
               7 prerendered paths
             </span>
           </div>
-          <div class="metric-grid" style={{ '--accent': projects[1].accent }}>
+          <div class="metric-grid" style={`--accent: ${projects[1].accent}`}>
             <div class="metric-card">
               <span>Projects</span>
               <strong>{projects.length}</strong>
@@ -73,7 +74,7 @@ export default function HomePage(_props: RouteSectionProps) {
           </div>
         </article>
 
-        <article class="panel-card" style={{ '--accent': labs[0].accent }}>
+        <article class="panel-card" style={`--accent: ${labs[0].accent}`}>
           <div class="section-header">
             <div>
               <p class="eyebrow">Route map</p>
@@ -86,7 +87,11 @@ export default function HomePage(_props: RouteSectionProps) {
           <div class="route-list">
             <For each={featuredRoutes.slice(0, 5)}>
               {(route) => (
-                <A class="route-item" href={route.href} style={{ '--accent': route.accent }}>
+                <A
+                  class="route-item"
+                  href={withBasePath(route.href)}
+                  style={`--accent: ${route.accent}`}
+                >
                   <strong>{route.title}</strong>
                   <span>{route.note}</span>
                 </A>
@@ -96,13 +101,13 @@ export default function HomePage(_props: RouteSectionProps) {
         </article>
       </section>
 
-      <section class="panel-card" style={{ '--accent': projects[2].accent }}>
+      <section class="panel-card" style={`--accent: ${projects[2].accent}`}>
         <div class="section-header">
           <div>
             <p class="eyebrow">How it is structured</p>
             <h2>Route groups</h2>
           </div>
-          <A class="card-link" href="/projects">
+          <A class="card-link" href={withBasePath('/projects')}>
             Browse every project
           </A>
         </div>
@@ -110,7 +115,7 @@ export default function HomePage(_props: RouteSectionProps) {
         <div class="project-grid">
           <For each={projects}>
             {(project) => (
-              <article class="project-card" style={{ '--accent': project.accent }}>
+              <article class="project-card" style={`--accent: ${project.accent}`}>
                 <div class="project-card__title">
                   <div class="project-meta">
                     <p class="eyebrow">{project.phase}</p>
@@ -126,7 +131,7 @@ export default function HomePage(_props: RouteSectionProps) {
                   <For each={project.tags}>{(tag) => <span class="chip">{tag}</span>}</For>
                 </div>
 
-                <A class="card-link" href={project.routeHint}>
+                <A class="card-link" href={withBasePath(project.routeHint)}>
                   Open detail route
                 </A>
               </article>
@@ -137,3 +142,7 @@ export default function HomePage(_props: RouteSectionProps) {
     </div>
   )
 }
+
+export default createRoute({
+  component: HomeView,
+})

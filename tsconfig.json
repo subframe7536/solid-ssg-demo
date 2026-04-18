@@ -1,6 +1,6 @@
 {
   "extends": "@subf/config/tsconfig-web",
   "compilerOptions": {
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node", "solid-file-router/client"]
   }
 }

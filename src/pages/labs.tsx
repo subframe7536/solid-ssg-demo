@@ -1,13 +1,14 @@
 import { A } from '@solidjs/router'
-import type { RouteSectionProps } from '@solidjs/router'
+import { createRoute } from 'solid-file-router'
 import { For } from 'solid-js'
 
+import { withBasePath } from '../base-path'
 import { labs, projects } from '../demo-data'
 
-export default function LabsPage(_props: RouteSectionProps) {
+function LabsListView() {
   return (
     <div class="page stack">
-      <section class="hero-card" style={{ '--accent': labs[0].accent }}>
+      <section class="hero-card" style={`--accent: ${labs[0].accent}`}>
         <div class="hero-headline">
           <p class="eyebrow">Labs</p>
           <h2 class="page-title">
@@ -26,7 +27,7 @@ export default function LabsPage(_props: RouteSectionProps) {
             const project = projects.find((item) => item.id === lab.linkedProjectId)
 
             return (
-              <article class="lab-card" style={{ '--accent': lab.accent }}>
+              <article class="lab-card" style={`--accent: ${lab.accent}`}>
                 <div class="lab-card__title">
                   <div class="lab-meta">
                     <p class="eyebrow">{project?.name ?? lab.linkedProjectId}</p>
@@ -43,10 +44,10 @@ export default function LabsPage(_props: RouteSectionProps) {
                 </ul>
 
                 <div class="action-row">
-                  <A class="button" href={`/labs/${lab.id}`}>
+                  <A class="button" href={withBasePath(`/labs/${lab.id}`)}>
                     Open lab route
                   </A>
-                  <A class="ghost-button" href={`/projects/${lab.linkedProjectId}`}>
+                  <A class="ghost-button" href={withBasePath(`/projects/${lab.linkedProjectId}`)}>
                     Related project
                   </A>
                 </div>
@@ -58,3 +59,7 @@ export default function LabsPage(_props: RouteSectionProps) {
     </div>
   )
 }
+
+export default createRoute({
+  component: LabsListView,
+})
