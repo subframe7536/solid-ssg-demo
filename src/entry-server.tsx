@@ -2,7 +2,6 @@ import { renderToStringAsync } from 'solid-js/web'
 
 import { App } from './app'
 
-export async function render(props: { url: string }) {
-  const app = await renderToStringAsync(() => <App url={props.url} />)
-  return { app }
+export default async function (props: { url: string }) {
+  return await renderToStringAsync(() => <App url={props.url} />)
 }

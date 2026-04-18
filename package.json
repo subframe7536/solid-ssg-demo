@@ -21,6 +21,7 @@
   "devDependencies": {
     "@solidjs/router": "^0.16.1",
     "@subf/config": "^0.2.1",
+    "@types/node": "^25.6.0",
     "oxfmt": "^0.45.0",
     "oxlint": "^1.60.0",
     "typescript": "^5.9.3",

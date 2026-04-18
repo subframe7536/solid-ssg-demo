@@ -25,13 +25,18 @@ type BundleOutput = Record<string, BundleAsset | BundleChunk>
 
 export type SolidBuildMode = 'spa' | 'ssr' | 'ssg'
 
-const ENVIRONMENT_CLIENT = 'client'
-const ENVIRONMENT_SERVER = 'ssr'
+const ENVIRONMENT = {
+  CLIENT: 'client',
+  SERVER: 'ssr',
+} as const
 const INDEX_HTML_FILE_NAME = 'index.html'
-const MODE_SPA: SolidBuildMode = 'spa'
-const MODE_SSG: SolidBuildMode = 'ssg'
+const MODE = {
+  SPA: 'spa',
+  SSR: 'ssr',
+  SSG: 'ssg',
+} as const
 
-type EnvironmentName = typeof ENVIRONMENT_CLIENT | typeof ENVIRONMENT_SERVER
+type EnvironmentName = typeof ENVIRONMENT.CLIENT | typeof ENVIRONMENT.SERVER
 
 export type PrerenderRoutesSource = readonly string[] | (() => Awaitable<readonly string[]>)
 
@@ -110,22 +115,21 @@ async function mapWithConcurrency<T, R>(
 async function loadServerRenderer(config: ResolvedConfig, entryFileName: string) {
   const serverOutDir = path.resolve(
     config.root,
-    config.environments[ENVIRONMENT_SERVER].build.outDir,
+    config.environments[ENVIRONMENT.SERVER].build.outDir,
   )
   const serverEntryUrl = pathToFileURL(path.join(serverOutDir, entryFileName)).href
-  return import(`${serverEntryUrl}?t=${Date.now()}`)
+  return import(`${serverEntryUrl}?t=${Date.now()}`).then((mod) => mod.default || mod)
 }
 
 function renderTemplate(template: string, app: string) {
   return template
-    .replace('<!--ssr-outlet-->', app)
-    .replace('<!--ssr-head-->', generateHydrationScript())
-    .replace('<!--ssr-assets-->', getAssets())
+    .replace(/<div id="root">.*?<\/div>/, `<div id="root">${app}</div>`)
+    .replace('</head>', `${generateHydrationScript()}${getAssets()}</head>`)
 }
 
 export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
   const {
-    mode = MODE_SSG,
+    mode = MODE.SSG,
     serverEntry = 'src/entry-server.tsx',
     prerender: { routes = ['/'], concurrency = 4 } = {},
   } = options
@@ -134,33 +138,40 @@ export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
   let serverEntryFileName: string | undefined
 
   return [
-    solidPlugin({ ssr: mode !== MODE_SPA }),
+    solidPlugin({ ssr: mode !== MODE.SPA }),
     {
       name: 'solid-ssg-environment-api',
       sharedDuringBuild: true,
       apply(_, env) {
-        return mode === MODE_SSG && env.command === 'build'
+        return mode === MODE.SSG && env.command === 'build'
       },
       config(userConfig) {
         const getOutDir = (envName: EnvironmentName, subDir: string) =>
           path.join(userConfig.environments?.[envName]?.build?.outDir ?? 'dist', subDir)
         return {
           builder: {
+            sharedPlugins: true,
             async buildApp(builder) {
-              await builder.build(builder.environments[ENVIRONMENT_SERVER])
-              await builder.build(builder.environments[ENVIRONMENT_CLIENT])
+              await builder.build(builder.environments[ENVIRONMENT.SERVER])
+              await builder.build(builder.environments[ENVIRONMENT.CLIENT])
             },
           },
           environments: {
-            [ENVIRONMENT_CLIENT]: {
+            [ENVIRONMENT.CLIENT]: {
+              consumer: 'client',
               build: {
-                outDir: getOutDir(ENVIRONMENT_CLIENT, 'client'),
+                outDir: getOutDir(ENVIRONMENT.CLIENT, 'client'),
               },
             },
-            [ENVIRONMENT_SERVER]: {
+            [ENVIRONMENT.SERVER]: {
+              consumer: 'server',
               build: {
-                outDir: getOutDir(ENVIRONMENT_SERVER, 'server'),
+                outDir: getOutDir(ENVIRONMENT.SERVER, 'server'),
                 ssr: serverEntry,
+                copyPublicDir: false,
+              },
+              optimizeDeps: {
+                exclude: ['solid-js', 'solid-js/web', '@solidjs/router'],
               },
             },
           },
@@ -172,7 +183,7 @@ export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
       generateBundle: {
         order: 'post',
         async handler(_outputOptions, bundle) {
-          if (this.environment.name === ENVIRONMENT_SERVER) {
+          if (this.environment.name === ENVIRONMENT.SERVER) {
             const ssrEntryChunk = findSsrEntryChunk(
               bundle,
               this.environment.config.root,
@@ -186,14 +197,12 @@ export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
             return
           }
 
-          if (this.environment.name !== ENVIRONMENT_CLIENT || mode !== MODE_SSG) {
+          if (this.environment.name !== ENVIRONMENT.CLIENT || mode !== MODE.SSG) {
             return
           }
 
-          const rendererEntryFileName = serverEntryFileName
-          if (!rendererEntryFileName) {
+          if (!serverEntryFileName) {
             this.error('Missing SSR renderer output before prerendering client routes')
-            return
           }
 
           const indexHtmlAsset = findIndexHtmlAsset(bundle)
@@ -221,7 +230,7 @@ export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
           ]
           const serverRenderer = await loadServerRenderer(
             this.environment.config,
-            rendererEntryFileName,
+            serverEntryFileName!,
           )
 
           this.emitFile({
@@ -241,13 +250,13 @@ export function solidSsgPlugin(options: SolidSsgPluginOptions = {}): Plugin[] {
             prerenderRoutes,
             prerenderConcurrency,
             async (route) => {
-              const { app } = await serverRenderer.render({
+              const str = await serverRenderer({
                 url: basePath + route,
               })
 
               return {
                 route,
-                html: renderTemplate(htmlTemplate, app),
+                html: renderTemplate(htmlTemplate, str),
               }
             },
           )
