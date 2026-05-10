@@ -7,7 +7,7 @@ import { solid } from './src/vite-plugin'
 export default defineConfig({
   plugins: [
     solid({
-      mode: 'ssg',
+      isSSG: true,
       prerender: {
         routes: getPrerenderPaths,
       },

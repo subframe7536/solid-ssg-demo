@@ -23,25 +23,18 @@ type BundleChunk = {
 
 type BundleOutput = Record<string, BundleAsset | BundleChunk>
 
-export type SolidBuildMode = 'spa' | 'ssr' | 'ssg'
-
 const ENVIRONMENT = {
   CLIENT: 'client',
   SERVER: 'ssr',
 } as const
 const INDEX_HTML_FILE_NAME = 'index.html'
-const MODE = {
-  SPA: 'spa',
-  SSR: 'ssr',
-  SSG: 'ssg',
-} as const
 
 type EnvironmentName = typeof ENVIRONMENT.CLIENT | typeof ENVIRONMENT.SERVER
 
 export type PrerenderRoutesSource = readonly string[] | (() => Awaitable<readonly string[]>)
 
 export interface SolidSsgPluginOptions {
-  mode?: SolidBuildMode
+  isSSG: boolean
   serverEntry?: string
   prerender?: {
     routes?: PrerenderRoutesSource
@@ -127,9 +120,9 @@ function renderTemplate(template: string, app: string) {
     .replace('</head>', `${generateHydrationScript()}${getAssets()}</head>`)
 }
 
-export function solid(options: SolidSsgPluginOptions = {}): Plugin[] {
+export function solid(options: SolidSsgPluginOptions): Plugin[] {
   const {
-    mode = MODE.SSG,
+    isSSG,
     serverEntry = 'src/entry-server.tsx',
     prerender: { routes = ['/'], concurrency = 4 } = {},
   } = options
@@ -138,12 +131,12 @@ export function solid(options: SolidSsgPluginOptions = {}): Plugin[] {
   let serverEntryFileName: string | undefined
 
   return [
-    solidPlugin({ ssr: mode !== MODE.SPA }),
+    solidPlugin({ ssr: isSSG }),
     {
       name: 'solid-ssg-environment-api',
       sharedDuringBuild: true,
       apply(_, env) {
-        return mode === MODE.SSG && env.command === 'build'
+        return isSSG && env.command === 'build'
       },
       config(userConfig) {
         const getOutDir = (envName: EnvironmentName, subDir: string) =>
@@ -151,11 +144,20 @@ export function solid(options: SolidSsgPluginOptions = {}): Plugin[] {
         const clientOutDir = getOutDir(ENVIRONMENT.CLIENT, 'client')
         const serverOutDir = getOutDir(ENVIRONMENT.SERVER, 'server')
         return {
+          build: {
+            copyPublicDir: false,
+          },
           builder: {
             sharedPlugins: true,
             async buildApp(builder) {
-              await builder.build(builder.environments[ENVIRONMENT.SERVER])
-              await builder.build(builder.environments[ENVIRONMENT.CLIENT])
+              const serverEnvironment = builder.environments[ENVIRONMENT.SERVER]
+              if (!serverEnvironment.isBuilt) {
+                await builder.build(serverEnvironment)
+              }
+              const clientEnvironment = builder.environments[ENVIRONMENT.CLIENT]
+              if (!clientEnvironment.isBuilt) {
+                await builder.build(clientEnvironment)
+              }
               console.log(
                 `Build completed! You can serve the output with a static file server like \`http-server\` on ${clientOutDir}.`,
               )
@@ -166,6 +168,7 @@ export function solid(options: SolidSsgPluginOptions = {}): Plugin[] {
               consumer: 'client',
               build: {
                 outDir: clientOutDir,
+                copyPublicDir: true,
               },
             },
             [ENVIRONMENT.SERVER]: {
@@ -202,7 +205,7 @@ export function solid(options: SolidSsgPluginOptions = {}): Plugin[] {
             return
           }
 
-          if (this.environment.name !== ENVIRONMENT.CLIENT || mode !== MODE.SSG) {
+          if (this.environment.name !== ENVIRONMENT.CLIENT) {
             return
           }
 
